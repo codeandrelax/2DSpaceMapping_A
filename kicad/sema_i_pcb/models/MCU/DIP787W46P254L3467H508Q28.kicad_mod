@@ -89,7 +89,7 @@
     (solder_mask_margin 0.102) (tstamp e8e91ed7-b7e0-4f63-962d-7ec6745df008))
   (pad "28" thru_hole circle (at 3.937 -16.51) (size 1.243 1.243) (drill 0.83) (layers "*.Cu" "*.Mask")
     (solder_mask_margin 0.102) (tstamp 942ca944-2f15-43fc-b65b-bfd2a78792d6))
-  (model "C:/Users/Dunja/Desktop/faks/2DSpaceMapping_A/kicad/MCU/PIC24FJ64GA002-I_SP.step"
+  (model "${KIPRJMOD}/models/MCU/PIC24FJ64GA002-I_SP.step"
     (offset (xyz 0 0 -1.5))
     (scale (xyz 1 1 1))
     (rotate (xyz -90 0 90))

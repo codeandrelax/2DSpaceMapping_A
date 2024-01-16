@@ -93,7 +93,7 @@
       )
     )
   )
-  (model "C:/Users/Dunja/Desktop/faks/2DSpaceMapping_A/kicad/ESP8266/ESP8266-01_ESP-01.step"
+  (model "${KIPRJMOD}/models/ESP8266/ESP8266-01_ESP-01.step"
     (offset (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz -90 0 0))
