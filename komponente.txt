@@ -1,0 +1,5 @@
+MCU: PIC24FJ64GA002 - https://eu.mouser.com/ProductDetail/Microchip-Technology/PIC24FJ64GA002-I-SP?qs=V%2FyyTCAHA4ChMHX5BWhjEA%3D%3D
+WiFi modul: WRL-17146 - https://eu.mouser.com/ProductDetail/SparkFun/WRL-17146?qs=DPoM0jnrROXqYUXDsg9bzA%3D%3D
+Pin Headers - 2 x https://eu.mouser.com/ProductDetail/Hirose-Connector/A2-2PA-2.54DSA71?qs=eDUdFcBPps0LzTdpQAJ4wQ%3D%3D
+Push button - https://eu.mouser.com/ProductDetail/SparkFun/COM-09190?qs=WyAARYrbSnYmfgv9mXV0oQ%3D%3D
+SPDT Switch - https://eu.mouser.com/ProductDetail/CUI-Devices/SLW-1276864-4A-D?qs=1Kr7Jg1SGW90vOt02EYiag%3D%3D
