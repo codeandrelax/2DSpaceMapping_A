@@ -6,7 +6,7 @@
     (property "Value" "" (at 35.56 -6.35 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (at 35.56 -6.35 0)
+    (property "Footprint" "edge_conn:edge_connector" (at 34.29 -3.81 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "" (at 35.56 -6.35 0)
