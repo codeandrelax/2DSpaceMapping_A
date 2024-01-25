@@ -1,4 +1,4 @@
-22460155811826128
+22477217834292900
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -2453,6 +2453,41 @@ Buzzer_Beeper
 Speaker_CUI_CMR-1206S-67
 Speaker, 30mW, 300-7000Hz, IP67 face, 12x6x2,25mm, https://www.cuidevices.com/product/resource/cmr-12062s-67.pdf
 speaker CUI
+0
+2
+2
+CAP_RES
+4k7
+SDR03EZPF4701-1
+Resistor
+0
+2
+2
+CAP_RES
+10k
+SDR10EZPF1002
+Resistor
+0
+2
+2
+CAP_RES
+10uF
+C2220
+Capacitor
+0
+2
+2
+CAP_RES
+100nF
+0603_2023-1
+Capacitor
+0
+2
+2
+CAP_RES
+330R
+ERA6A
+Resistor
 0
 2
 2
@@ -62510,9 +62545,9 @@ Yellow 5381 Series LED
 2
 2
 MCU
-DIP787W46P254L3467H508Q28
+SOIC28-W_MC_MCH
 
-
+PIC24FJ64GA002-E/SO 
 0
 28
 28
@@ -66223,6 +66258,34 @@ Oscillator
 Oscillator_SeikoEpson_SG-8002DC
 8-lead dip package, row spacing 7.62 mm (300 mils)
 DIL DIP PDIP 2.54mm 7.62mm 300mil
+0
+4
+4
+PIN_HEADERS
+A24PA254DSA71
+A2-4PA-2.54DSA(71)-2
+Connector
+0
+4
+4
+PIN_HEADERS
+HDRV2W70P0X254_1X2_478X244X884P
+A2-2PA-2.54DSA(71)
+Connector
+0
+2
+2
+PIN_HEADERS
+HDRV5W56P0X254_1X5_1240X244X904P
+A2-5PA-2.54DSA(71)
+Connector
+0
+5
+5
+PUSH_BTN
+COM12992
+COM-12992-2
+Switch
 0
 4
 4
@@ -85266,6 +85329,13 @@ rotary encoder
 0
 7
 6
+SPDT_SW
+SLW12768644AD
+SLW-1276864-4A-D-1
+Switch
+0
+3
+3
 Sensor
 ASAIR_AM2302_P2.54mm_Lead2.75mm_TabDown
 Temperature and humidity module, http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
