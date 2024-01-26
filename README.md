@@ -1,6 +1,6 @@
 # O projektu
 <p align="justify">
-# Specifikacija projektnog zadatka od strane project owner-a - uopšteni zahtjevi
+# Specifikacija projektnog zadatka od strane project owner-a (uopšteni zahtjevi)
 - autonomno vozilo
 - upravljačka ploča (MCU: PIC24FJ64GAxx)
 - lidar
