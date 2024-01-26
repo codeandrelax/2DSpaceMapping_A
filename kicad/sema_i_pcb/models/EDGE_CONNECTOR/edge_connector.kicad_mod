@@ -14,8 +14,6 @@
   )
   (fp_line (start 0 -10) (end 0 -3)
     (stroke (width 0.05) (type default)) (layer "Edge.Cuts") (tstamp 29d221e0-6808-4d75-ba42-3523b41a1385))
-  (fp_line (start 0 -10) (end 52 -10)
-    (stroke (width 0.05) (type solid)) (layer "Edge.Cuts") (tstamp a634fcf5-365f-46b8-bd16-0e94a24a863b))
   (fp_line (start 3 0) (end 49 0)
     (stroke (width 0.05) (type default)) (layer "Edge.Cuts") (tstamp d86f12c5-b072-4c05-826f-c92dbe8d6bb3))
   (fp_line (start 52 -10) (end 52 -3)
