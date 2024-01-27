@@ -1,4 +1,4 @@
-# O projektu
+# O projektu 🚗
 <p align="justify">
 Specifikacija projektnog zadatka od strane project owner-a (uopšteni zahtjevi)
   
