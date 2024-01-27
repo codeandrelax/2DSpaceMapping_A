@@ -14,6 +14,7 @@ Jedan od glavnih zahtjeva korisnika jeste da se ostvari bežična komunikacija i
 Mapiranje prostora i kontrola kretanja se vrši uz pomoć Lidara. Korisnik može kontrolisati kretanje vozila pomoću korisničke aplikacije i njenog GUI-a dok prati pogled na prostor u realnom vremenu.
 Na kraju, neophodno je razviti PC aolikaciju za prikaz reljefa oko samog vozila. Minimalni uslovi koji moraju biti ispunjeni su mogućnost pokretanja i zaustavljanja vozila.
 
+
 Nakon prvog sastanka sa project owner-om dobili smo detaljnije specifikacije samog projektnog zadatka koje podrazumijevaju sljedeće:
 - PCB pločica može da bude jednoslojna ili dvoslojna
 - prilikom izrade PCB ploče koristimo SMD komponente, gdje je to moguće
