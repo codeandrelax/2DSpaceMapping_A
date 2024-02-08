@@ -23,5 +23,7 @@ Nakon prvog sastanka sa project owner-om, dobili smo detaljnije specifikacije sa
 - nije potrebno projektovati dodatno napajanje,  dovoljno je koristiti već postojeće
 - budžet za narudzbu i kupovinu komponenata ne bi trebalo da prelazi 30 dolara
 
+Početna šema, neophodna za izradu i projektovanje štampane ploče prikazana je na slici ispod, a detaljnije objašnjenje same šeme i načina spajanja iste nalazi se na Wiki stranici.
 
 
+![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/2f7372e2-dae2-4764-a45e-1873a220e018)
