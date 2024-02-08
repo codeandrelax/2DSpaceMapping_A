@@ -1,4 +1,4 @@
-O projektu 🚗
+# O projektu 🚗
 Specifikacija projektnog zadatka od strane project owner-a (uopšteni zahtjevi)
 
 autonomno vozilo
