@@ -16,3 +16,17 @@ Nakon prvog sastanka sa project owner-om, dobili smo detaljnije specifikacije sa
 - minimalna širina veze prilikom rutiranja iznosi 0.254 mm
 - nije potrebno projektovati dodatno napajanje, dovoljno je koristiti već postojeće
 - budžet za narudzbu i kupovinu komponenata ne bi trebalo da prelazi 30 dolara
+
+Početna šema, neophodna za izradu i projektovanje štampane ploče prikazana je na slici ispod, a detaljnije objašnjenje same šeme i načina spajanja iste nalazi se na Wiki stranici.
+
+![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/6d128b33-2866-4c8a-ae0e-71f599b6bc59)
+
+
+Nakon projektovane šema, kao rezultat dobijamo PCB i rutiranu pločicu, prikzanu na slici ispod :
+
+![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/8b781960-7fe1-4c56-adbb-dc19849625e8)
+
+
+Dostavljamo i 3D model PCB-a :
+
+![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/cd37e0d4-cbff-4da7-91c0-ac58e72083cc)
