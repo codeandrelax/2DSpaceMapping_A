@@ -27,3 +27,12 @@ Početna šema, neophodna za izradu i projektovanje štampane ploče prikazana j
 
 
 ![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/2f7372e2-dae2-4764-a45e-1873a220e018)
+
+Nakon projektovane šema, kao rezultat dobijamo PCB i rutiranu pločicu, prikzanu na slici ispod :
+
+![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/6fed7947-294c-46de-b49b-b1b22bd3d8e7)
+
+Dostavljamo i 3D model PCB-a :
+
+![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/f9999e05-9234-46d4-8bc6-666b6d9066e5)
+
