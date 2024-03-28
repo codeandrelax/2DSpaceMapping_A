@@ -7,5 +7,6 @@ void main()
   while(1)
   {
     LATB.F2 = ~LATB.F2;
+    Delay_ms(1000);
   }
 }
