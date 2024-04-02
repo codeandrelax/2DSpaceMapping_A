@@ -5,12 +5,12 @@ import time
 import asyncio
 from websockets.sync.client import connect
 
-IP_ADDRESS = "192.168.100.75"
+IP_ADDRESS = "10.99.146.210"
 PORT = ":8765"
 
 enviroment = env.buildEnviroment((512,1024))
 enviroment.originalMap = enviroment.map.copy()
-lidar = sensor.LaserSensor(150, enviroment.originalMap)
+lidar = sensor.LaserSensor(300, enviroment.originalMap)
 enviroment.infomap = enviroment.map.copy()
 
 running = True
