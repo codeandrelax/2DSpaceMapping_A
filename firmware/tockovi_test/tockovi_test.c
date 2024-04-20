@@ -1,4 +1,5 @@
 #define DEVICE_ADDR 0xE0
+
 // Software I2C connections
 sbit Soft_I2C_Sda           at RB2_bit;
 sbit Soft_I2C_Scl           at RB3_bit;
@@ -6,7 +7,8 @@ sbit Soft_I2C_Sda_Direction at TRISB2_bit;
 sbit Soft_I2C_Scl_Direction at TRISB3_bit;
 
 /* Function that addresses device, then desired register, and puts some value in it */
-void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned short data_value){
+void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned short data_value)
+{
      Soft_I2C_Start();
      Soft_I2C_Write(dev_addr);
      Soft_I2C_Write(reg_addr);
@@ -16,7 +18,7 @@ void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned
 void main() {
 
      /* Set all analog pins as digital, set port B pins as output and initialize to zero */
-     AD1PCFG = 0xFFFF;
+     AD1PCFGL = 0xFFFF;
      LATB = 0;
      TRISB = 0;
 
