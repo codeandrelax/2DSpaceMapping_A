@@ -1,3 +1,9 @@
+/** @file auto_car.c
+ *
+ * @brief Fajl sa izvornim C kodom koji implementira logiku 
+ * kretanja autonomnog vozila. 
+ */
+
 #define DEVICE_ADDR 0xE0
 #define SERVO_PWM_FREQ 50
 #define IR_PIN F2
@@ -59,9 +65,9 @@ void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned
 inline void drive_forward()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 125);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 115);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 125);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 115);
 }
 
 /**
@@ -71,9 +77,9 @@ inline void drive_forward()
 inline void drive_soft_left()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 100);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 110);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 125);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 120);
 }
 
 /**
@@ -83,9 +89,9 @@ inline void drive_soft_left()
 inline void drive_soft_right()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 125);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 120);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 100);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 110);
 }
 
 /**
@@ -170,10 +176,10 @@ void main()
   unsigned i = 0;
   
   // Konfiguracije registara MCU
-  AD1PCFGL = 0xFFEF;
+  AD1PCFGL = 0xFFEF; // Podesi pin IR senzora kao analogni, ostatak digitalni
   LATB = 0;
   TRISB = 0;
-  TRISB.IR_PIN = 1; // Podesi pin IR senzora kao analogni
+  TRISB.IR_PIN = 1; // Podesi pin IR senzora kao ulazni
   ODCB.SERVO_PIN = 1; // Podesi servo pin kao open-drain za 5V PWM izlaz
   RPOR3 = 0x1200; // Remapiraj servo pin kao OC1 za omogucenje PWM-a
   
@@ -210,13 +216,16 @@ void main()
 
   while(1)
   {
+	// Zakreni servo od 0 do 180 stepeni u koracima i uzmi odmjerke
     for(i=0; i<5; i++)
     {
       PWM_Set_Duty(DUTY_CYCLES[i] * pwm_period / 100, 1);
-      Delay_ms(200);
+      Delay_ms(200); // Potrebno kasnjenje da bi servo dobio dovoljno impulsa
       distances[i] = ADC1_Get_Sample(4);
     }
     decide_direction();
+	
+	// Zakreni servo od 180 do 0 stepeni u koracima i uzmi odmjerke
     for(i=4; i>=0; i--)
     {
       PWM_Set_Duty(DUTY_CYCLES[i] * pwm_period / 100, 1);
