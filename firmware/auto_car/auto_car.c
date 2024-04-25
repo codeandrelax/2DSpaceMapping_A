@@ -8,9 +8,10 @@
 #define SERVO_PWM_FREQ 50
 #define IR_PIN F2
 #define SERVO_PIN F7
+#define FILTER_LEN 5
 
 /**
- * Konfiguracija pinova za ostvarenje komunikacije putem 
+ * Konfiguracija pinova za ostvarenje komunikacije putem
  * softverskog I2C protokola.
  */
 sbit Soft_I2C_Sda           at RB9_bit;
@@ -22,14 +23,14 @@ sbit Soft_I2C_Scl_Direction at TRISB8_bit;
  * Granicna vrijednost koja odredjuje kada treba da se zaustavi
  * vozilo, ako su sve udaljenosti vece od zadate.
  */
-const unsigned STOP_THRESHOLD = 560;
+const unsigned STOP_THRESHOLD = 270;
 
 /**
  * Niz vrijednost faktora popune PWM signala koji kontrolise rad
  * servo motora. Vrijednosti odgovaraju uglovima od priblizno
  * 0, 45, 90, 135 i 180 stepeni, respektivno.
  */
-const unsigned DUTY_CYCLES[5] = {2, 5, 7, 10, 13};
+const float DUTY_CYCLES[5] = {4.5, 6.0, 9.0, 11.0, 13.0};
 
 /*
  * Niz koji cuva udaljenosti dobijene od IR senzora kroz svaku iteraciju
@@ -62,34 +63,34 @@ void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned
  * @brief Funkcija koja podesava vrijednosti registara PWM kanala
  * tako da se obezbjedi kretanje vozila unaprijed.
  */
-inline void drive_forward()
+void drive_forward()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 115);
-  I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 115);
-}
-
-/**
- * @brief Funkcija koja podesava vrijednosti registara PWM kanala
- * tako da se obezbjedi blago skretanje vozila ulijevo.
- */
-inline void drive_soft_left()
-{
-  I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 110);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 120);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
   I2C_Send_Message(DEVICE_ADDR, 0x05, 120);
 }
 
 /**
  * @brief Funkcija koja podesava vrijednosti registara PWM kanala
- * tako da se obezbjedi blago skretanje vozila udesno.
+ * tako da se obezbjedi blago skretanje vozila ulijevo.
  */
-inline void drive_soft_right()
+void drive_soft_left()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 120);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 110);
+  I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 150);
+}
+
+/**
+ * @brief Funkcija koja podesava vrijednosti registara PWM kanala
+ * tako da se obezbjedi blago skretanje vozila udesno.
+ */
+void drive_soft_right()
+{
+  I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 150);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
   I2C_Send_Message(DEVICE_ADDR, 0x05, 110);
 }
@@ -98,22 +99,22 @@ inline void drive_soft_right()
  * @brief Funkcija koja podesava vrijednosti registara PWM kanala
  * tako da se obezbjedi naglo skretanje vozila ulijevo.
  */
-inline void drive_hard_left()
+void drive_hard_left()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
   I2C_Send_Message(DEVICE_ADDR, 0x03, 0);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 125);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 255);
 }
 
 /**
  * @brief Funkcija koja podesava vrijednosti registara PWM kanala
  * tako da se obezbjedi naglo skretanje vozila udesno.
  */
-inline void drive_hard_right()
+void drive_hard_right()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 125);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 255);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
   I2C_Send_Message(DEVICE_ADDR, 0x05, 0);
 }
@@ -122,7 +123,7 @@ inline void drive_hard_right()
  * @brief Funkcija koja podesava vrijednosti registara PWM kanala
  * tako da se obezbjedi zaustavljanje vozila.
  */
-inline void drive_stop()
+void drive_stop()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
   I2C_Send_Message(DEVICE_ADDR, 0x03, 0);
@@ -134,46 +135,84 @@ inline void drive_stop()
  * @brief Funkcija koja odlucuje naredni pravac kretanja vozila za
  * trenutno skenirani polukrug prostora i dobijene udaljenosti.
  */
-void decide_direction()
+char decide_direction()
 {
   unsigned min_distance = distances[2];
   unsigned direction = 2;
-  unsigned i = 0;
-  for(; i<5; i++)
+  unsigned idx = 0;
+  char turn = 0;
+  for(idx=0; idx<5; idx++)
   {
-    if(distances[i] < min_distance)
+    if((distances[idx] + 28) < min_distance)
     {
-      direction = i;
-      min_distance = distances[i];
+      direction = idx;
+      min_distance = distances[idx];
     }
   }
   if(min_distance >= STOP_THRESHOLD)
   {
     drive_stop();
-    return;
+    //UART1_Write_Text("Stopping !\r\n");
+    return turn;
   }
   switch(direction)
   {
     case 0:
       drive_hard_left();
+      turn = 1;
+      //UART1_Write_Text("Turning hard left.\r\n");
       break;
     case 1:
       drive_soft_left();
+      //UART1_Write_Text("Turning soft left.\r\n");
       break;
     case 3:
       drive_soft_right();
+      //UART1_Write_Text("Turning soft right.\r\n");
       break;
     case 4:
       drive_hard_right();
+      turn = 1;
+      //UART1_Write_Text("Turning hard right.\r\n");
+      break;
     default:
       drive_forward();
+      //UART1_Write_Text("Moving forward.\r\n");
   }
+  return turn;
+}
+
+/**
+ * @brief Funkcija koja implementira median filtar, radi izbjegavanja
+ * ocitavanja suma sa senzora.
+ * @param[in] array Niz podataka sa senzora koji se filtrira
+ */
+unsigned median_filter(unsigned array[])
+{
+  unsigned i,j;
+  unsigned swap;
+  for(i=0; i<FILTER_LEN; i++)
+  {
+    for(j=0; j<FILTER_LEN; j++)
+    {
+      if(array[i] > array[j])
+      {
+        swap = array[i];
+        array[i] = array[j];
+        array[j] = swap;
+      }
+    }
+  }
+  return array[FILTER_LEN/2];
 }
 
 void main()
 {
   unsigned pwm_period = 0;
-  unsigned i = 0;
+  unsigned i = 0, j = 0;
+  unsigned dist_array[FILTER_LEN];
+  char turn = 0;
+  //char txt[6];
   
   // Konfiguracije registara MCU
   AD1PCFGL = 0xFFEF; // Podesi pin IR senzora kao analogni, ostatak digitalni
@@ -182,6 +221,11 @@ void main()
   TRISB.IR_PIN = 1; // Podesi pin IR senzora kao ulazni
   ODCB.SERVO_PIN = 1; // Podesi servo pin kao open-drain za 5V PWM izlaz
   RPOR3 = 0x1200; // Remapiraj servo pin kao OC1 za omogucenje PWM-a
+  
+  /*TRISB.F10 = 1;
+  RPINR18 = 0x1F0A;
+  RPOR5 = 0x0300;
+  UART1_Init(9600);*/
   
   // Inicijalizacija A/D konvertora
   ADC1_Init();
@@ -213,25 +257,57 @@ void main()
   Delay_ms(100);
 
   drive_forward();
+  
+  //UART1_Write_Text("Starting...\r\n");
 
   while(1)
   {
-	// Zakreni servo od 0 do 180 stepeni u koracima i uzmi odmjerke
+    // Zakreni servo od 0 do 180 stepeni u koracima i uzmi odmjerke
     for(i=0; i<5; i++)
     {
       PWM_Set_Duty(DUTY_CYCLES[i] * pwm_period / 100, 1);
-      Delay_ms(200); // Potrebno kasnjenje da bi servo dobio dovoljno impulsa
-      distances[i] = ADC1_Get_Sample(4);
+      Delay_ms(60); // Potrebno kasnjenje da bi servo dobio dovoljno impulsa
+      for(j=0; j<FILTER_LEN; j++)
+      {
+        dist_array[j] = ADC1_Get_Sample(4);
+        Delay_ms(20);
+      }
+      distances[i] = median_filter(dist_array);
+      /*WordToStr(distances[i], txt);
+      UART1_Write_Text("Distance: ");
+      UART1_Write_Text(txt);
+      UART1_Write_Text("\r\n");*/
     }
-    decide_direction();
-	
-	// Zakreni servo od 180 do 0 stepeni u koracima i uzmi odmjerke
-    for(i=4; i>=0; i--)
+    
+    turn = decide_direction();
+    if(turn)
     {
-      PWM_Set_Duty(DUTY_CYCLES[i] * pwm_period / 100, 1);
-      Delay_ms(200);
-      distances[i] = ADC1_Get_Sample(4);
+      Delay_ms(350);
+      drive_stop();
     }
-    decide_direction();
+
+    // Zakreni servo od 180 do 0 stepeni u koracima i uzmi odmjerke
+    for(i=0; i<5; i++)
+    {
+      PWM_Set_Duty(DUTY_CYCLES[4 - i] * pwm_period / 100, 1);
+      Delay_ms(60);
+      for(j=0; j<FILTER_LEN; j++)
+      {
+        dist_array[j] = ADC1_Get_Sample(4);
+        Delay_ms(20);
+      }
+      distances[4 - i] = median_filter(dist_array);
+      /*WordToStr(distances[4 - i], txt);
+      UART1_Write_Text("Distance: ");
+      UART1_Write_Text(txt);
+      UART1_Write_Text("\r\n");*/
+    }
+    
+    turn = decide_direction();
+    if(turn)
+    {
+      Delay_ms(350);
+      drive_stop();
+    }
   }
 }

@@ -44,7 +44,10 @@ Count=0
 File0=Software_I2C
 File1=ADC
 File2=PWM
-Count=3
+File3=UART
+File4=Conversions
+File5=C_String
+Count=6
 [EXPANDED_NODES]
 0=auto_car.mcpds
 1=Sources
