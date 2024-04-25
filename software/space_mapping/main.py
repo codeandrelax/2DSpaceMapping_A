@@ -10,7 +10,7 @@ RANGE_Y = [760,800]
 ROBOT_IP_ADDR = "192.168.100.75"
 
 # ASSERT IF SIMULATOR IS USED
-SIMULATOR = 0
+SIMULATOR = 1
 
 lidar_data = []
 
@@ -70,6 +70,7 @@ def convert_data(data):
 
 async def receiver(websocket):
     global lidar_data
+    global SIMULATOR 
     async for message in websocket:
         data_temp = numpy.asarray(message.split(","))
         if SIMULATOR == 0:
