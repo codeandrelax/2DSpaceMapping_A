@@ -23,14 +23,14 @@ sbit Soft_I2C_Scl_Direction at TRISB8_bit;
  * Granicna vrijednost koja odredjuje kada treba da se zaustavi
  * vozilo, ako su sve udaljenosti vece od zadate.
  */
-const unsigned STOP_THRESHOLD = 270;
+const unsigned STOP_THRESHOLD = 250;
 
 /**
  * Niz vrijednost faktora popune PWM signala koji kontrolise rad
  * servo motora. Vrijednosti odgovaraju uglovima od priblizno
  * 0, 45, 90, 135 i 180 stepeni, respektivno.
  */
-const float DUTY_CYCLES[5] = {4.5, 6.0, 9.0, 11.0, 13.0};
+const float DUTY_CYCLES[5] = {4.0, 5.0, 9.0, 12.0, 14.0};
 
 /*
  * Niz koji cuva udaljenosti dobijene od IR senzora kroz svaku iteraciju
@@ -66,9 +66,9 @@ void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned
 void drive_forward()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 120);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 100);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 120);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 100);
 }
 
 /**
@@ -78,9 +78,9 @@ void drive_forward()
 void drive_soft_left()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 110);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 90);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 150);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 120);
 }
 
 /**
@@ -90,9 +90,9 @@ void drive_soft_left()
 void drive_soft_right()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 150);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 120);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 110);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 90);
 }
 
 /**
@@ -143,10 +143,21 @@ char decide_direction()
   char turn = 0;
   for(idx=0; idx<5; idx++)
   {
-    if((distances[idx] + 28) < min_distance)
+    if((idx % 4 == 0))
     {
-      direction = idx;
-      min_distance = distances[idx];
+      if((distances[idx] + 75) < min_distance)
+      {
+        direction = idx;
+        min_distance = distances[idx];
+      }
+    }
+    else
+    {
+      if((distances[idx] + 25) < min_distance)
+      {
+        direction = idx;
+        min_distance = distances[idx];
+      }
     }
   }
   if(min_distance >= STOP_THRESHOLD)
@@ -266,7 +277,7 @@ void main()
     for(i=0; i<5; i++)
     {
       PWM_Set_Duty(DUTY_CYCLES[i] * pwm_period / 100, 1);
-      Delay_ms(60); // Potrebno kasnjenje da bi servo dobio dovoljno impulsa
+      Delay_ms(50); // Potrebno kasnjenje da bi servo dobio dovoljno impulsa
       for(j=0; j<FILTER_LEN; j++)
       {
         dist_array[j] = ADC1_Get_Sample(4);
@@ -282,7 +293,7 @@ void main()
     turn = decide_direction();
     if(turn)
     {
-      Delay_ms(350);
+      Delay_ms(300);
       drive_stop();
     }
 
@@ -290,7 +301,7 @@ void main()
     for(i=0; i<5; i++)
     {
       PWM_Set_Duty(DUTY_CYCLES[4 - i] * pwm_period / 100, 1);
-      Delay_ms(60);
+      Delay_ms(50);
       for(j=0; j<FILTER_LEN; j++)
       {
         dist_array[j] = ADC1_Get_Sample(4);
@@ -306,7 +317,7 @@ void main()
     turn = decide_direction();
     if(turn)
     {
-      Delay_ms(350);
+      Delay_ms(300);
       drive_stop();
     }
   }
