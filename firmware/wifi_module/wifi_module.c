@@ -9,41 +9,44 @@ const char* CMD_AT = "AT\r\n";
 const char* CMD_RST = "AT+RST\r\n";
 const char* CMD_MODE = "AT+CWMODE=1\r\n";
 const char* CMD_LIST_AP = "AT+CWLAP\r\n";
+const char* CMD_WIFI_CONN = "AT+CWJAP=\"etfbl.net\",\"\"\r\n";
+const char* CMD_CONN_TYPE = "AT+CIPMUX=0\r\n";
+const char* CMD_START_TCP = "AT+CIPSTART=\"TCP\",\"10.99.130.47\",8084\r\n";
+const char* CMD_SEND = "AT+CIPSEND=7\r\n";
 
-void response_wait()
+unsigned response = 0;
+
+void UART1_Receiver_Interrupt() iv 0x00002A
 {
-  unsigned resp;
-  unsigned counter = 0;
-  while(1)
-  {
-    if(UART1_Data_Ready() == 1)
-    {
-      resp = UART1_Read();
-      UART2_Write(resp);
-      counter = 0;
-    }
-    else
-    {
-      counter++;
-      Delay_ms(1);
-    }
-    if(counter == 5000)
-      break;
-  }
+  IEC0.U1RXIE = 0;
+  response = UART1_Read();
+  UART2_Write(response);
+  IEC0.U1RXIE = 1;
+  IFS0.U1RXIF = 0;
+}
+
+void UART1_Error_Interrupt() iv 0x000096
+{
+  IEC4.U1ERIE = 0;
+  U1STA.OERR  = 0;
+  IEC4.U1ERIE = 1;
+  IFS4.U1ERIF = 0;
 }
 
 void main()
 {
-  char flag = 0;
-  char ok_str[3] = {0,0,0};
-  unsigned long clock = 0;
-  unsigned long fosc = 0;
-  char tmp_str[25];
   CLKDIV = 0;
   AD1PCFGL = 0xFFFF;
   TRISB = 0;
   LATB = 0;
-  //TRISB.UART_RX_PIN = 1;
+  
+  IPC2bits.U1RXIP = 5;
+  IFS0.U1RXIF = 0;
+  IEC0.U1RXIE = 1;
+  
+  IPC16bits.U1ERIP = 5;
+  IFS4.U1ERIF = 0;
+  IEC4.U1ERIE = 1;
   
   Unlock_IOLOCK();
   PPS_Mapping_NoLock(14, _INPUT, _U1RX);
@@ -52,65 +55,56 @@ void main()
   PPS_Mapping_NoLock(11, _OUTPUT, _U2TX);
   Lock_IOLOCK();
   
-  //RPINR19 = 0x1F0A;
-  //RPOR5 = 0x0500;
-  
-//  clock = Clock_Mhz();
-//  fosc = Get_Fosc_kHz();
-  
   UART1_Init(BAUD_RATE_WIFI);
   Delay_ms(500);
   UART2_Init(BAUD_RATE);
   Delay_ms(500);
+
+  UART2_Write_Text("Sending reset command...\r\n");
+  Delay_ms(100);
+  UART1_Write_Text(CMD_RST);
+
+  Delay_ms(2000);
   
-//  LongWordToStr(clock, tmp_str);
-//
-//  UART2_Write_Text("Clock = ");
-//  UART2_Write_Text(tmp_str);
-//  UART2_Write_Text("\r\n");
-//
-//  LongWordToStr(fosc, tmp_str);
-//
-//  UART2_Write_Text("Fosc = ");
-//  UART2_Write_Text(tmp_str);
-//  UART2_Write_Text("\r\n");
-//
-//  UART2_Write_Text("Sending reset command...\r\n");
-//  Delay_ms(100);
-//  UART1_Write_Text(CMD_RST);
-//  response_wait();
-//
-//  Delay_ms(500);
-//
-//  UART2_Write_Text("Sending AT command...\r\n");
-//  Delay_ms(100);
-//  UART1_Write_Text(CMD_AT);
-//  response_wait();
-//
-//  Delay_ms(500);
-//
-//  UART2_Write_Text("\nListing available APs...\r\n");
-//  Delay_ms(100);
-//  UART1_Write_Text(CMD_LIST_AP);
-//  response_wait();
-//
-//  UART2_Write_Text("Start loopback...\r\n\r\n");
-//
+  UART2_Write_Text("\r\nSending AT command...\r\n");
+  Delay_ms(100);
+  UART1_Write_Text(CMD_AT);
+
+  Delay_ms(1000);
+  
+  UART2_Write_Text("\r\nSetting STA mode...\r\n");
+  Delay_ms(100);
+  UART1_Write_Text(CMD_MODE);
+
+  Delay_ms(1000);
+  
+  UART2_Write_Text("\r\nSetting connection type...\r\n");
+  Delay_ms(100);
+  UART1_Write_Text(CMD_CONN_TYPE);
+
+  Delay_ms(1000);
+
+  UART2_Write_Text("\r\nListing available APs...\r\n");
+  Delay_ms(100);
+  UART1_Write_Text(CMD_LIST_AP);
+  
+  Delay_ms(5000);
+  
+  UART2_Write_Text("\r\nConnecting to the WiFi...\r\n");
+  Delay_ms(100);
+  UART1_Write_Text(CMD_WIFI_CONN);
+
+  Delay_ms(5000);
+    
   while(1)
   {
-    if(UART2_Data_Ready() == 1)
-    {
-      flag = UART2_Read();
-      if(flag == 'a')
-      {
-        UART2_Write_Text(CMD_AT);
-        UART1_Write_Text(CMD_AT);
-        ok_str[0] = UART1_Read();
-        ok_str[1] = UART1_Read();
-        UART2_Write_Text("Response: ");
-        UART2_Write_Text(ok_str);
-        UART2_Write_Text("\r\n\r\n");
-      }
-    }
+    UART2_Write_Text("\r\nStarting TCP connection...\r\n");
+    Delay_ms(100);
+    UART1_Write_Text(CMD_START_TCP);
+    Delay_ms(2000);
+    UART1_Write_Text(CMD_SEND);
+    Delay_ms(2000);
+    UART1_Write_Text("Hello\r\n");
+    Delay_ms(2000);
   }
 }
