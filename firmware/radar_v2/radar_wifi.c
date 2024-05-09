@@ -4,7 +4,7 @@
  * radara, koji je u ovom slucaju spoj servo motora i IR senzora.
  * Servo motor se zakrece od 0 do 180 stepeni i unazad u koracima,
  * te kupi odmjerke sa IR senzora koje nakon toga preko WiFi modula
- * šalje ka serverskoj aplikaciji koja iscrtava prostor oko radara.
+ * salje ka serverskoj aplikaciji koja iscrtava prostor oko radara.
  */
  
 #include "esp8266.h"
@@ -15,12 +15,14 @@
 #define BUFFER_LEN 1024 // Velicina bafera za povratne podatke ESP8266 modula
 #define FILTER_LEN 5 // Duzina MA filtra koji filtrira senzorske podatke
 #define SEPARATOR "," // Separatorski string za format poruke koja prenosi podatke
+#define START_LABEL '%' // Predefinisani znak koji oznacava nastavak kretanja vozila
+#define STOP_LABEL '#' // Predefinisani znak koji oznacava zaustavljanje kretanja vozila
 
 #define IR_PIN F2
 #define SERVO_PIN F7
 #define ESP_TX_PIN F13
 #define ESP_RX_PIN F14
-#define LED_PIN F10 // U svrhu debagovanja
+#define LED_PIN F10 
 
 // Faktor popune PWM signala koji odgovara uglu od priblizno 0 stepeni servo motora
 const double SERVO_MIN_DUTY = 2.5;
@@ -31,6 +33,7 @@ const unsigned MESSAGE_LEN = (RADAR_RESOLUTION + 1) * 10;
 
 volatile char buffer[BUFFER_LEN];
 volatile unsigned buf_idx = 0;
+unsigned start_stop_flag = 0;
 
 /**
  * @brief Prekidna rutina koja obradjuje prijem podatka preko UART veze
@@ -39,6 +42,14 @@ void UART1_Receiver_Interrupt() iv 0x00002A
 {
   IEC0.U1RXIE = 0;
   buffer[buf_idx] = UART1_Read();
+  if(buffer[buf_idx] == START_LABEL)
+  {
+    start_stop_flag = 1;
+  }
+  else if(buffer[buf_idx] == STOP_LABEL)
+  {
+    start_stop_flag = 0;
+  }
   buf_idx++;
   IEC0.U1RXIE = 1;
   IFS0.U1RXIF = 0;
@@ -122,20 +133,11 @@ void establish_wifi_connection()
  */
 void send_wifi_message(char* message)
 {
-  short response = 0;
   char cmd[32];
-  // Uspostavimo TCP vezu sa udaljenom aplikacijom
-  UART1_Write_Text(CMD_START_TCP);
-  response = poll_response();
-  // Ako je uspjesna veza, saljemo poruku
-  if(response > 0)
-  {
-    sprintf(cmd, CMD_SEND, strlen(message));
-    UART1_Write_Text(cmd);
-    poll_response();
-    UART1_Write_Text(message);
-  }
-  // Veza se zatvara sa strane aplikacije nakon razmjene
+  sprintf(cmd, CMD_SEND, strlen(message));
+  UART1_Write_Text(cmd);
+  poll_response();
+  UART1_Write_Text(message);
 }
 
 void main()
@@ -143,6 +145,7 @@ void main()
   unsigned pwm_period = 0;
   unsigned i = 0, j = 0, sum = 0;
   unsigned adc_value = 0.0;
+  short response = 0;
   double duty_cycle = SERVO_MIN_DUTY;
   double duty_increment = (SERVO_MAX_DUTY - SERVO_MIN_DUTY) / RADAR_RESOLUTION;
   char distance_str[6];
@@ -182,47 +185,72 @@ void main()
   Delay_ms(100);
   
   establish_wifi_connection();
+
+  // Uspostavimo TCP vezu sa udaljenom aplikacijom
+  UART1_Write_Text(CMD_START_TCP);
+  response = poll_response();
   
+  memset(buffer, 0, BUFFER_LEN);
+  start_stop_flag = 0;
+
   /**
    * Svaka iteracija while petlje alternirajuce pomjera servo motor od 0 do 180
    * i nazad od 180 do 0 stepeni u koracima odredjenim rezolucijom radara.
    */
-  memset(buffer, 0, BUFFER_LEN);
   while(1)
   {
-    memset(distance_str, 0, 6);
-    memset(angle_str, 0, 15);
-    memset(message, 0, MESSAGE_LEN);
-    /**
-     * Svaka iteracija for petlje pomjera servo motor na sledeci ugao
-     * kao odgovarajuci inkrement faktora popune, koji zavisi od rezolucije
-     * radara. U svakoj iteraciji se uzme odmjerak sa A/D konvertora,
-     * pretvori u udaljenost (datoj kao napon sa senzora) i zajedno sa
-     * faktorom popune za koji je dobijen odmjerak, konkatenira na string
-     * koji se kasnije proslijedjuje korisniku preko WiFi veze.
-     */
-    for(i=0; i<=RADAR_RESOLUTION; i++)
+    _wait_for_start_:
+    if(start_stop_flag == 1)
     {
-      PWM_Set_Duty(duty_cycle * pwm_period / 100, 1);
-      Delay_ms(200);
-      sum = 0;
-      for(j=0; j<FILTER_LEN; j++)
+      memset(distance_str, 0, 6);
+      memset(angle_str, 0, 15);
+      memset(message, 0, MESSAGE_LEN);
+      /**
+       * Svaka iteracija for petlje pomjera servo motor na sledeci ugao
+       * kao odgovarajuci inkrement faktora popune, koji zavisi od rezolucije
+       * radara. U svakoj iteraciji se uzme odmjerak sa A/D konvertora,
+       * pretvori u udaljenost (datoj kao napon sa senzora) i zajedno sa
+       * faktorom popune za koji je dobijen odmjerak, konkatenira na string
+       * koji se kasnije proslijedjuje korisniku preko WiFi veze.
+       */
+      for(i=0; i<=RADAR_RESOLUTION; i++)
       {
-        sum += ADC1_Get_Sample(4);
-        Delay_ms(25);
+        if(start_stop_flag == 0)
+        {
+          goto _wait_for_start_;
+        }
+        PWM_Set_Duty(duty_cycle * pwm_period / 100, 1);
+        Delay_ms(200);
+        if(start_stop_flag == 0)
+        {
+          goto _wait_for_start_;
+        }
+        sum = 0;
+        for(j=0; j<FILTER_LEN; j++)
+        {
+          sum += ADC1_Get_Sample(4);
+          Delay_ms(25);
+        }
+        if(start_stop_flag == 0)
+        {
+          goto _wait_for_start_;
+        }
+        adc_value = sum / FILTER_LEN;
+        WordToStr(adc_value, distance_str);
+        FloatToStr(duty_cycle, angle_str);
+        strncat(message, distance_str, 6);
+        strcat(message, SEPARATOR);
+        strncat(message, angle_str, 4);
+        strcat(message, SEPARATOR);
+        duty_cycle += duty_increment;
       }
-      adc_value = sum / FILTER_LEN;
-      WordToStr(adc_value, distance_str);
-      FloatToStr(duty_cycle, angle_str);
-      strncat(message, distance_str, 6);
-      strcat(message, SEPARATOR);
-      strncat(message, angle_str, 4);
-      strcat(message, SEPARATOR);
-      duty_cycle += duty_increment;
+      message[strlen(message) - 1] = 0;
+      duty_cycle -= duty_increment;
+      duty_increment *= (-1.0);
+      if(response == 1)
+      {
+        send_wifi_message(message);
+      }
     }
-    message[strlen(message) - 1] = 0;
-    duty_cycle -= duty_increment;
-    duty_increment *= (-1.0);
-    send_wifi_message(message);
   }
 }
