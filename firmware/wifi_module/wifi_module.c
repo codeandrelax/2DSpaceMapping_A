@@ -1,3 +1,11 @@
+/** @file wifi_module.c
+ * 
+ * @brief Fajl koji sadrži kod koji testira rad ESP8266-01 modula za 
+ * WiFi komunikaciju. Sastoji se od koda koji vrši osnovne konfiguracije 
+ * modula, povezivanje na WiFi mrežu, uspostavljanje komunikacije sa udaljenim
+ * uređajem i konačno slanje obične poruke kontinualno u vremenu.
+ */
+
 #define WIFI_RX_PIN F13
 #define WIFI_TX_PIN F14
 #define UART_RX_PIN F10
@@ -16,6 +24,11 @@ const char* CMD_SEND = "AT+CIPSEND=7\r\n";
 
 unsigned response = 0;
 
+/**
+ * @brief Funkcija rukovaoca prekida za prijem UART podataka.
+ * Čita podatak dobijen od strane ESP8266-01 i šalje ga na drugi
+ * UART preko koga se vrši debug-ovanje.
+ */
 void UART1_Receiver_Interrupt() iv 0x00002A
 {
   IEC0.U1RXIE = 0;
@@ -25,6 +38,11 @@ void UART1_Receiver_Interrupt() iv 0x00002A
   IFS0.U1RXIF = 0;
 }
 
+/**
+ * @brief Funkcija rukovaoca prekida koja se aktivira kada se
+ * desi prekoračenje UART bafera za prijem podataka. Rukovaoc
+ * čisti bit greške (OERR) čime omogućava nastavak UART prenosa. 
+ */
 void UART1_Error_Interrupt() iv 0x000096
 {
   IEC4.U1ERIE = 0;
