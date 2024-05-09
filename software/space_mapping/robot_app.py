@@ -1,17 +1,20 @@
-import pygame, math, numpy, socket, os
+import pygame, math, numpy, socket, os, threading, time
 
 ROBOT_RADIUS = 20
+DRAW_OFFSET = 30
 START_RANGE_X = [0,100]
 STOP_RANGE_X = [500,600]
 RANGE_Y = [560,600]
-ROBOT_IP_ADDR = "192.168.100.75"
 PORT = 8084
 STOP_BTN_PRESSED = 0
 START_BTN_PRESSED = 1
 NO_BTN_PRESSED = -1
 ADC_VOLTAGE_CHUNK = 3.3/1023.0
+BTN_THREAD_SLEEP = 0.001
 
 lidar_data = []
+connection = 0
+address = 0
 
 def draw_start_and_stop(screen, font):
     text_start = font.render('START', True, pygame.Color(0,0,0))
@@ -53,20 +56,24 @@ def convert_data(data):
         voltage = data[2*i] * ADC_VOLTAGE_CHUNK
         distance = conv_voltage_to_distance(voltage)
         angle = get_angle_from_duty_cycle(data[2*i+1])
-        if distance > 0.0:
-            conv_data.append(distance)
-            conv_data.append(angle)
+        conv_data.append(distance)
+        conv_data.append(angle)
     return conv_data
 
 def screen_update():
+    prev_distance = -1.0
+    prev_point = (0,0)
     screen.fill((255, 255, 255))
     for i in range(len(lidar_data)//2):
-        point = da_to_pos(lidar_data[2*i] + ROBOT_RADIUS, lidar_data[2*i+1], (300,300))
-        #print("Distance:", lidar_data[i] + ROBOT_RADIUS)
-        #print("Angle:", lidar_data[i+1])
-        #print("Point:", point)
-        #print("----------------------------------------------------------------------------------------")
-        pygame.draw.circle(screen, pygame.Color(0,0,0), point, 4)
+        if (lidar_data[2*i] > 0):
+            point = da_to_pos(lidar_data[2*i] + ROBOT_RADIUS + DRAW_OFFSET, lidar_data[2*i+1], (300,300))
+            if prev_distance > 0: 
+                pygame.draw.line(screen, pygame.Color(0,0,0), prev_point, point, widht=2)
+            prev_point = point
+            prev_distance = lidar_data[2*i]
+        else:
+            prev_point = (0,0)
+            prev_distance = -1.0
     pygame.draw.circle(screen, pygame.Color(0, 0, 200), (300, 300), ROBOT_RADIUS)
     pygame.draw.circle(screen, pygame.Color(0,0,0), (300,300), ROBOT_RADIUS, width=2)
     draw_start_and_stop(screen, font)
@@ -76,15 +83,22 @@ def check_start_stop():
     mouse_pos = pygame.mouse.get_pos()
     for ev in pygame.event.get(): 
         if ev.type == pygame.MOUSEBUTTONDOWN: 
-            #print("Mouse position:", mouse_pos)
             if (START_RANGE_X[0] <= mouse_pos[0] <= START_RANGE_X[1]) and (RANGE_Y[0] <= mouse_pos[1] <= RANGE_Y[1]):
-                #print("USER PRESSED THE START BUTTON")
-                return START_BTN_PRESSED
-                
+                return START_BTN_PRESSED    
             if (STOP_RANGE_X[0] <= mouse_pos[0] <= STOP_RANGE_X[1]) and (RANGE_Y[0] <= mouse_pos[1] <= RANGE_Y[1]):
-                #print("USER PRESSED THE STOP BUTTON")
                 return STOP_BTN_PRESSED
     return NO_BTN_PRESSED
+
+def button_check_thread(name):
+    global connection
+    while True:
+        btn_check = check_start_stop()
+        if btn_check == START_BTN_PRESSED:
+            connection.send("%")
+        elif btn_check == STOP_BTN_PRESSED:
+            connection.send("#")
+        time.sleep(BTN_THREAD_SLEEP)
+
                 
 # Inicijalizacija ekrana na kome se prikazuje mapirani prostor            
 pygame.init()
@@ -101,9 +115,13 @@ sock.bind(('0.0.0.0', PORT))
 sock.listen(1)
 print("Server started !")
 
+# Kreiranje niti koja obradjuje pritisak na START i STOP tastere
+thrd = threading.Thread(target=button_check_thread, args=(1,))
+
+connection,address = sock.accept()
+thrd.start()
 
 while True: 
-    connection,address = sock.accept()
     buffer = connection.recv(1024)  
     buf_decoded = buffer.decode('utf-8')
     buf_decoded.replace(" ", "")
@@ -111,10 +129,4 @@ while True:
     data = data.astype(float)
     lidar_data = convert_data(data)
     screen_update()
-    btn_check = check_start_stop()
-    if btn_check == START_BTN_PRESSED:
-        connection.send("START")
-    elif btn_check == STOP_BTN_PRESSED:
-        connection.send("STOP")
-    connection.close()
 
