@@ -6,7 +6,7 @@
  * te kupi odmjerke sa IR senzora koje nakon toga preko WiFi modula
  * salje ka serverskoj aplikaciji koja iscrtava prostor oko radara.
  */
- 
+
 #include "esp8266.h"
 
 #define PWM_FREQ 50 // Frekvencija PWM signala za servo motor
@@ -22,7 +22,7 @@
 #define SERVO_PIN F7
 #define ESP_TX_PIN F13
 #define ESP_RX_PIN F14
-#define LED_PIN F10 
+#define LED_PIN F10
 
 // Faktor popune PWM signala koji odgovara uglu od priblizno 0 stepeni servo motora
 const double SERVO_MIN_DUTY = 2.5;
@@ -145,13 +145,13 @@ void main()
   unsigned pwm_period = 0;
   unsigned i = 0, j = 0, sum = 0;
   unsigned adc_value = 0.0;
-  short response = 0;
+  short resp = 0;
   double duty_cycle = SERVO_MIN_DUTY;
   double duty_increment = (SERVO_MAX_DUTY - SERVO_MIN_DUTY) / RADAR_RESOLUTION;
   char distance_str[6];
   char angle_str[15];
   char message[MESSAGE_LEN];
-  
+
   // Konfiguracija internih registara pinova MCU-a
   CLKDIV = 0;
   AD1PCFGL = 0xFFEF; // Podesi pin IR senzora kao analogni, ostatak digitalni
@@ -163,7 +163,7 @@ void main()
   RPOR3 = 0x1200; // Remapiraj servo pin kao OC1 za omogucenje PWM-a
   RPOR6 = 0x0300; // Remapiraj pin za UART TX kao U1TX
   RPINR18 = 0x1F0E; // Remapiraj UART RX pin kao U1RX
-  
+
   // Konfiguracija registara za prekide
   IPC2bits.U1RXIP = 5;
   IFS0.U1RXIF = 0;
@@ -171,27 +171,28 @@ void main()
   IPC16bits.U1ERIP = 5;
   IFS4.U1ERIF = 0;
   IEC4.U1ERIE = 1;
-  
+
   // Inicijalizuj A/D konvertor
   ADC1_Init();
-  
+
   // Inicijalizuj PWM
   pwm_period = PWM_Init(PWM_FREQ, 1, 8, 2);
   PWM_Start(1);
-  
+
   // Inicijalizuj UART
   UART1_Init(BAUD_RATE);
 
   Delay_ms(100);
-  
+
   establish_wifi_connection();
 
   // Uspostavimo TCP vezu sa udaljenom aplikacijom
   UART1_Write_Text(CMD_START_TCP);
-  response = poll_response();
-  
+  resp = poll_response();
+
   memset(buffer, 0, BUFFER_LEN);
-  start_stop_flag = 0;
+  buf_idx = 0;
+  start_stop_flag = 1;
 
   /**
    * Svaka iteracija while petlje alternirajuce pomjera servo motor od 0 do 180
@@ -247,10 +248,16 @@ void main()
       message[strlen(message) - 1] = 0;
       duty_cycle -= duty_increment;
       duty_increment *= (-1.0);
-      if(response == 1)
+      if(resp == 1)
       {
         send_wifi_message(message);
       }
+    }
+    else
+    {
+      duty_cycle = SERVO_MIN_DUTY;
+      duty_increment = (SERVO_MAX_DUTY - SERVO_MIN_DUTY) / RADAR_RESOLUTION;
+      PWM_Set_Duty(SERVO_MIN_DUTY * pwm_period / 100, 1);
     }
   }
 }

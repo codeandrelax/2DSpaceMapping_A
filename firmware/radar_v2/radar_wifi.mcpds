@@ -59,7 +59,4 @@ Count=3
 [LIB_EXPANDED_NODES]
 0=mikroE Libraries
 1=System Libraries
-107=C_String
-351=PWM
-587=Sprintf
-Count=5
+Count=2
