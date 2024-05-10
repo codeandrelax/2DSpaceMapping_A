@@ -1,7 +1,7 @@
 import pygame, math, numpy, socket, os, threading, time
 
 ROBOT_RADIUS = 20
-DRAW_OFFSET = 30
+DRAW_OFFSET = 20
 START_RANGE_X = [0,100]
 STOP_RANGE_X = [500,600]
 RANGE_Y = [560,600]
@@ -68,7 +68,7 @@ def screen_update():
         if (lidar_data[2*i] > 0):
             point = da_to_pos(lidar_data[2*i] + ROBOT_RADIUS + DRAW_OFFSET, lidar_data[2*i+1], (300,300))
             if prev_distance > 0: 
-                pygame.draw.line(screen, pygame.Color(0,0,0), prev_point, point, widht=2)
+                pygame.draw.line(screen, pygame.Color(0,0,0), prev_point, point, width=2)
             prev_point = point
             prev_distance = lidar_data[2*i]
         else:
@@ -80,24 +80,28 @@ def screen_update():
     pygame.display.flip()
 
 def check_start_stop():
+    press_flag = NO_BTN_PRESSED
     mouse_pos = pygame.mouse.get_pos()
     for ev in pygame.event.get(): 
         if ev.type == pygame.MOUSEBUTTONDOWN: 
             if (START_RANGE_X[0] <= mouse_pos[0] <= START_RANGE_X[1]) and (RANGE_Y[0] <= mouse_pos[1] <= RANGE_Y[1]):
-                return START_BTN_PRESSED    
+                press_flag = START_BTN_PRESSED    
             if (STOP_RANGE_X[0] <= mouse_pos[0] <= STOP_RANGE_X[1]) and (RANGE_Y[0] <= mouse_pos[1] <= RANGE_Y[1]):
-                return STOP_BTN_PRESSED
-    return NO_BTN_PRESSED
+                press_flag = STOP_BTN_PRESSED
+    return press_flag
 
 def button_check_thread(name):
     global connection
+    global lidar_data
     while True:
-        btn_check = check_start_stop()
-        if btn_check == START_BTN_PRESSED:
-            connection.send("%")
-        elif btn_check == STOP_BTN_PRESSED:
-            connection.send("#")
-        time.sleep(BTN_THREAD_SLEEP)
+        buffer = connection.recv(1024)  
+        print("Received data !")
+        buf_decoded = buffer.decode('utf-8')
+        buf_decoded.replace(" ", "")
+        data = numpy.asarray(buf_decoded.split(","))
+        data = data.astype(float)
+        lidar_data = convert_data(data)
+        screen_update()
 
                 
 # Inicijalizacija ekrana na kome se prikazuje mapirani prostor            
@@ -122,11 +126,11 @@ connection,address = sock.accept()
 thrd.start()
 
 while True: 
-    buffer = connection.recv(1024)  
-    buf_decoded = buffer.decode('utf-8')
-    buf_decoded.replace(" ", "")
-    data = numpy.asarray(buf_decoded.split(","))
-    data = data.astype(float)
-    lidar_data = convert_data(data)
-    screen_update()
+    btn_check = check_start_stop()
+    if btn_check == START_BTN_PRESSED:
+        print("START button pressed !")
+        connection.send(bytes("%", "utf-8"))
+    elif btn_check == STOP_BTN_PRESSED:
+        connection.send(bytes("#", "utf-8"))
+        print("STOP button pressed !")
 
