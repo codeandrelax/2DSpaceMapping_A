@@ -66,9 +66,9 @@ void I2C_Send_Message(unsigned short dev_addr, unsigned short reg_addr, unsigned
 void drive_forward()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 100);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 90);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 100);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 90);
 }
 
 /**
@@ -78,9 +78,9 @@ void drive_forward()
 void drive_soft_left()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 90);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 80);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 120);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 110);
 }
 
 /**
@@ -90,9 +90,9 @@ void drive_soft_left()
 void drive_soft_right()
 {
   I2C_Send_Message(DEVICE_ADDR, 0x02, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x03, 120);
+  I2C_Send_Message(DEVICE_ADDR, 0x03, 110);
   I2C_Send_Message(DEVICE_ADDR, 0x04, 0);
-  I2C_Send_Message(DEVICE_ADDR, 0x05, 90);
+  I2C_Send_Message(DEVICE_ADDR, 0x05, 80);
 }
 
 /**
@@ -317,7 +317,7 @@ void main()
     turn = decide_direction();
     if(turn)
     {
-      Delay_ms(300);
+      Delay_ms(250);
       drive_stop();
     }
   }

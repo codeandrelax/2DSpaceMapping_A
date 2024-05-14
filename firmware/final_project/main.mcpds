@@ -6,7 +6,7 @@ Value=0
 [BUILD_TYPE]
 Value=0
 [ACTIVE_TAB]
-Value=radar_wifi.c
+Value=main.c
 [USE_EEPROM]
 Value=0
 [USE_HEAP]
@@ -16,17 +16,23 @@ Value=0
 [EEPROM_DEFINITION]
 Value=
 [FILES]
-File0=radar_wifi.c
-Count=1
+File0=main.c
+File1=hcsr04.c
+File2=movement.c
+Count=3
 [BINARIES]
 Count=0
 [IMAGES]
 Count=0
 ActiveImageIndex=-1
 [OPENED_FILES]
-File0=esp8266.h
-File1=radar_wifi.c
-Count=2
+File0=main.c
+File1=hcsr04.c
+File2=movement.h
+File3=hcsr04.h
+File4=movement.c
+File5=esp8266.h
+Count=6
 [EEPROM]
 Count=0
 [ACTIVE_COMMENTS_FILES]
@@ -38,25 +44,29 @@ Count=0
 [HEADER_PATH]
 Count=0
 [HEADERS]
-File0=esp8266.h
-Count=1
+File0=hcsr04.h
+File1=movement.h
+File2=esp8266.h
+Count=3
 [PLDS]
 Count=0
 [Useses]
 File0=ADC
 File1=UART
-File2=PWM
-File3=Conversions
-File4=C_String
-File5=Sprintf
-File6=C_Type
-Count=7
+File2=Sprintf
+File3=C_Type
+File4=Conversions
+File5=C_String
+File6=PWM
+File7=I2C
+Count=8
 [EXPANDED_NODES]
-0=radar_wifi.mcpds
+0=main.mcpds
 1=Sources
-3=Header Files
+5=Header Files
 Count=3
 [LIB_EXPANDED_NODES]
 0=mikroE Libraries
 1=System Libraries
+218=I2C
 Count=3
