@@ -36,7 +36,7 @@ Dostavljamo i 3D model PCB-a :
 
 ![image](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/f9999e05-9234-46d4-8bc6-666b6d9066e5)
 
-Na slici ispod se nalazi sklopljeno autonomno vozilo sa pratećim komponentama neophodnim za pravilan rad sammog vozila.
+Na slici ispod se nalazi sklopljeno autonomno vozilo sa pratećim komponentama neophodnim za pravilan rad samog vozila.
 
 ![size](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/459205ed-d0a2-4750-8809-29c22ccc8fbd)
 
