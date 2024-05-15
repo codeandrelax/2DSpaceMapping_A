@@ -40,3 +40,11 @@ Na slici ispod se nalazi sklopljeno autonomno vozilo sa pratećim komponentama n
 
 ![size](https://github.com/codeandrelax/2DSpaceMapping_A/assets/127949851/459205ed-d0a2-4750-8809-29c22ccc8fbd)
 
+Demonstracija skeniranja prostora IR senzorom i slanje podataka na aplikaciju za prikaz prostora data je na sledećem snimku.
+
+![radar-ezgif com-optimize](https://github.com/codeandrelax/2DSpaceMapping_A/assets/117661784/7efa6d1f-04dd-4f3f-a125-2b5ae2cb0a6d)
+
+Demonstracija kretanja vozila pored prepreka data je na sledećem snimku.
+
+![drive-ezgif com-optimize](https://github.com/codeandrelax/2DSpaceMapping_A/assets/117661784/4cef959a-57d1-4617-9e94-70d19f6dd524)
+
